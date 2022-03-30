@@ -1,9 +1,7 @@
 /*
- * Copyright (c) 2012-2014 Wind River Systems, Inc.
- *
- * SPDX-License-Identifier: Apache-2.0
+ * Main file of the project
+ * Containing the WDT initialization and an infinite loop that just prints and feeds thw wdt
  */
-
 #include <zephyr.h>
 #include <device.h>
 #include <sys/printk.h>
@@ -26,22 +24,6 @@
 #elif DT_HAS_COMPAT_STATUS_OKAY(nordic_nrf_watchdog)
 #define WDT_NODE DT_COMPAT_GET_ANY_STATUS_OKAY(nordic_nrf_watchdog)
 #endif
-
-void task_wdt_cb(int channel_id, void *user_data) {
-	printk("Task watchdog channel %d callback, thread: %s\n",
-		channel_id, k_thread_name_get((k_tid_t)user_data));
-
-	/*
-	 * If the issue could be resolved, call task_wdt_feed(channel_id) here
-	 * to continue operation.
-	 *
-	 * Otherwise we can perform some cleanup and reset the device.
-	 */
-
-	printk("Resetting device...\n");
-
-	sys_reboot(SYS_REBOOT_COLD);
-}
 
 void main(void)
 {
@@ -98,23 +80,3 @@ void main(void)
 		k_sleep(K_MSEC(1000));
 	}
 }
-
-void control_task(void) {
-	printk("control_task started!");
-
-	int wdt_id = task_wdt_add(110U, task_wdt_cb, (void *)k_current_get());
-	if(wdt_id < 0) {
-		printk("task_wdt_add() failed (%d)", wdt_id);
-		return;
-	}
-
-	while(1) {
-		//TODO: Put some condition that if true blocks the task here (BTN pressed, time based, else)
-
-		task_wdt_feed(wdt_id);
-		k_sleep(K_MSEC(50));
-	}
-}
-
-//Priority -> lowest number is higher priority
-K_THREAD_DEFINE(task_1, 1024, control_task, NULL, NULL, NULL, -1, 0, 1000U);
