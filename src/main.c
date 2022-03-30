@@ -9,6 +9,7 @@
 #include <sys/printk.h>
 #include <sys/reboot.h>
 #include <drivers/watchdog.h>
+#include <drivers/hwinfo.h>
 #include <task_wdt/task_wdt.h>
 
 /*
@@ -44,6 +45,19 @@ void task_wdt_cb(int channel_id, void *user_data) {
 
 void main(void)
 {
+	uint32_t reset_cause = 0;
+
+	int ret = hwinfo_get_reset_cause(&reset_cause);
+	if(ret != 0) {
+		printk("hwinfo_get_reset_cause failed (%d)", ret);
+		return;
+	}
+
+	//Clear reset flags after reading them, so they won't accumulate from different resets
+	hwinfo_clear_reset_cause();
+
+	printk("SODAQ Challenge fw booted\nLast reset cause was %d\n", reset_cause);
+
 #ifdef WDT_NODE
 	const struct device *hw_wdt = DEVICE_DT_GET(WDT_NODE);
 #else
@@ -55,7 +69,7 @@ void main(void)
 		hw_wdt = NULL;
 	}
 
-	int ret = task_wdt_init(hw_wdt);
+	ret = task_wdt_init(hw_wdt);
 	if(ret != 0) {
 		printk("task_wdt_init failed (%d)", ret);
 		return;
