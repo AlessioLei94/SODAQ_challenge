@@ -47,9 +47,15 @@ void main(void)
 {
 	uint32_t reset_cause = 0;
 
+	/*
+	 * Get info about last reset's cause.
+	 * Do not return in case this operation is not supported (ret == -ENOTSUP)
+	 */
 	int ret = hwinfo_get_reset_cause(&reset_cause);
-	if(ret != 0) {
-		printk("hwinfo_get_reset_cause failed (%d)", ret);
+	if(ret == -ENOTSUP) {
+		printk("hwinfo_get_reset_cause() not supported, value will be zero");
+	} else if(ret != 0) {
+		printk("hwinfo_get_reset_cause() failed (%d)", ret);
 		return;
 	}
 
@@ -71,14 +77,14 @@ void main(void)
 
 	ret = task_wdt_init(hw_wdt);
 	if(ret != 0) {
-		printk("task_wdt_init failed (%d)", ret);
+		printk("task_wdt_init() failed (%d)", ret);
 		return;
 	}
 
 	//Add wdt channel for main task, passing NULL instead of cb triggers reset
 	int wdt_id = task_wdt_add(1100U, NULL, NULL);
 	if(wdt_id < 0) {
-		printk("task_wdt_add failed (%d)", wdt_id);
+		printk("task_wdt_add() failed (%d)", wdt_id);
 		return;
 	}
 
@@ -98,7 +104,7 @@ void control_task(void) {
 
 	int wdt_id = task_wdt_add(110U, task_wdt_cb, (void *)k_current_get());
 	if(wdt_id < 0) {
-		printk("task_wdt_add failed (%d)", wdt_id);
+		printk("task_wdt_add() failed (%d)", wdt_id);
 		return;
 	}
 
