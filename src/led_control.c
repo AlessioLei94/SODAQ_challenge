@@ -26,6 +26,12 @@
 
 const struct device *dev;
 
+/*
+ * Task WDT callback function
+ * 
+ * - channel_id: id of the channel the timeout refers to
+ * - user_data: parameter used to pass the thread id in order to print it
+ */
 void task_wdt_cb(int channel_id, void *user_data) {
 	printk("Task watchdog channel %d callback, thread: %s\n",
 		channel_id, k_thread_name_get((k_tid_t)user_data));
@@ -42,6 +48,11 @@ void task_wdt_cb(int channel_id, void *user_data) {
 	sys_reboot(SYS_REBOOT_COLD);
 }
 
+/*
+ * Init function for LED control task. Retrieve the device using its name and configure GPIO
+ * 
+ * Return 0 on success, -1 for failure (could be customised returning different negative numbers)
+ */
 int led_control_init(void) {
 	dev = device_get_binding(LED0);
 	if (dev == NULL) {
@@ -58,6 +69,11 @@ int led_control_init(void) {
 	return 0;
 }
 
+/*
+ * LED's task function.
+ * Initialize led control, add a new channel to the task WDT then enter infinite loop
+ * in which the LED status is switched between ON and OFF and the WDT is fed.
+ */
 void led_control_task(void) {
 	bool led_status = true;
 
@@ -84,8 +100,6 @@ void led_control_task(void) {
 }
 
 /*
- * Declare task at compile time
- * 1. Start 1sec after boot
- * 2. Priority -> lowest number is higher priority
+ * Define task at compile time and starts it 1 sec after boot
  */
 K_THREAD_DEFINE(led_task, 1024, led_control_task, NULL, NULL, NULL, 0, 0, 1000U);

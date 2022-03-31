@@ -1,6 +1,6 @@
 /*
- * Main file of the project
- * Containing the WDT initialization and an infinite loop that just prints and feeds thw wdt
+ * Main file of the project containing the WDT initialization and an infinite
+ * loop that just prints a message and feeds the wdt
  */
 #include <zephyr.h>
 #include <device.h>
@@ -11,10 +11,6 @@
 #include <task_wdt/task_wdt.h>
 
 /*
- * To use this sample, either the devicetree's /aliases must have a
- * 'watchdog0' property, or one of the following watchdog compatibles
- * must have an enabled node.
- *
  * If the devicetree has a watchdog node, we get the watchdog device
  * from there. Otherwise, the task watchdog will be used without a
  * hardware watchdog fallback.
@@ -25,6 +21,13 @@
 #define WDT_NODE DT_COMPAT_GET_ANY_STATUS_OKAY(nordic_nrf_watchdog)
 #endif
 
+/*
+ * Main function
+ * 1. Get reset cause from hwinfo module then reset flags and print the cause
+ * 2. If WDT_NODE is defined get the hardware wdt device struct using the node_id and initialize it
+ * 3. Add new channel to Task WDT
+ * 4. Infinite loop printing a message and feeding the wdt
+ */
 void main(void)
 {
 	uint32_t reset_cause = 0;
@@ -73,10 +76,10 @@ void main(void)
 	/*
 	 * Infinite loop that just prints a message to stdout
 	 * and feeds the task wdt once every second
-	*/
+	 */
 	while(1) {
 		printk("Main task is alive :)");
-		//task_wdt_feed(wdt_id);
+		task_wdt_feed(wdt_id);
 		k_sleep(K_MSEC(1000));
 	}
 }
