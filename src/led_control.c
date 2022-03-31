@@ -42,18 +42,20 @@ void task_wdt_cb(int channel_id, void *user_data) {
 	sys_reboot(SYS_REBOOT_COLD);
 }
 
-void led_control_init(void) {
+int led_control_init(void) {
 	dev = device_get_binding(LED0);
 	if (dev == NULL) {
 		printk("device_get_binding() failed");
-		return;
+		return -1;
 	}
 
 	int ret = gpio_pin_configure(dev, PIN, GPIO_OUTPUT_ACTIVE | FLAGS);
 	if (ret < 0) {
 		printk("gpio_pin_configure() failed (%d)", ret);
-		return;
+		return -1;
 	}
+
+	return 0;
 }
 
 void led_control_task(void) {
@@ -61,7 +63,9 @@ void led_control_task(void) {
 
 	printk("control_task started!");
 
-	led_control_init();
+	if(led_control_init() < 0) {
+		return;
+	}
 
 	int wdt_id = task_wdt_add(WDT_RESET_TIME_MS, task_wdt_cb, (void *)k_current_get());
 	if(wdt_id < 0) {
