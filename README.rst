@@ -23,9 +23,6 @@ Visual Sudio Code.
 
 Implementation
 **************
-.. contents::
-   :local:
-   :depth: 2
 
 The source files containing the implementation of a task are:
 
