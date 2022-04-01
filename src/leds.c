@@ -1,7 +1,7 @@
 /*
  * File representing a LED driver.
- * Contains a init function to initialize and configure the board led,
- * and led_set_status() to turn it ON/OFF
+ * Simple implemetation because only one LED is initialized and handled,
+ * could be extended to handle more than one.
  */
 #include <leds.h>
 
@@ -43,8 +43,8 @@ int led_init(void) {
 	int ret = gpio_pin_configure(dev, PIN, GPIO_OUTPUT_ACTIVE | FLAGS);
 	if (ret < 0) {
 		printk("gpio_pin_configure() failed (%d)", ret);
-		return -1;
+		return ret;
 	}
 
-	return 0;
+	return ret;
 }
