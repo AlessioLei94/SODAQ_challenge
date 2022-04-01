@@ -7,41 +7,50 @@ Design choices
 ********
 
 My solution for the challege consists in a simple firmware that is split between few source files.
-For simplicity i decided to create files that contain a task and few other functions needed for what
-the task has to do. If this was a bigger project i would have separated this differently, having a file
-to represent drivers for each peripheral with the needed funcitions exported in header files that can
-be imported from files containing tasks implementation, possibly reusing the drivers code across
-different tasks.
+I separated the files having some of them containing the implementation of drivers while the others
+contain the implementation of tasks that are using some peripherals importing the drivers' header files.
+
+This way is possible to reuse the drivers code in different files and tasks without duplicating it.
+In this firmware the drivers are very simple because they handle just one led and one button and
+basic functionalities.
+
+This implementation design makes it easy to expand drivers for example to handle more than one led
+or button, or having higher level functionalities like making the led blink in different ways or
+handling different types of button press (long, short, double press).
+
+For building the firmware i used nRF Connect SDK v1.9.1 with the nRF Connect extension for
+Visual Sudio Code.
 
 Implementation
 ********
 
-The source files are:
+The source files containing the implementation of a task are:
 - main.c
-- led_control.c
+- task_contol.c
 
-main.c contains the main() function, entry point of the fw, that first gets and the reset cause from
-the hwinfo module and it prints its value after resetting the flags in orded to always have
+main.c contains the main() function, entry point of the fw, that first gets the reset
+cause from the hwinfo module then it prints its value after resetting the flags in orded to always have
 only the cause of the last reset.
 
 Then if the device has a WDT_NODE, representing the HW watchdog, its node_id will be used to get the
-pointer to the device struct and pass this one to the  function that initializes the watchdog.
+pointer to the device struct and pass this one to the function that initializes the watchdog.
 If the HW watchdog is present it will be used as a fallback in case the SW watchdog malfunctions.
 
 After the WDT initialization a new channel is added to it, this channel will be the one monitoring
-the infinite loop that is present at the end of the main() function. Once inside the loop this task
-will just print a message and feed the wdt every second.
+the main task. Once inside the infinite loop this task will just print a message and feed the
+wdt every second.
 
-led_control.c contains the Implementation of another task, that is defined at compile time using
-the K_THREAD_DEFINE macro. This will statically allocate the memory used as stack for the task.
+control_task.c contains the Implementation of another task, that is defined at compile time using
+the K_THREAD_DEFINE macro. This will statically allocate the memory used as stack by the task.
 
-Once the task is started it will initialize the LED device, getting a pointer to the device struct using
-its node_id and using this to set the GPIO, assigning a pin number and configuration flags needed to
-define the GPIO operation mode.
-
-Then a new wdt channel is created to monitor the led_task, this time assigning also a callback function
+Once the task is started it will initialize the LED and the BTN calling the corresponding init functions,
+and registers the button press callback.
+Then a new wdt channel is created to monitor the control_task, this time assigning also a callback function
 and passing the thread id as parameter to the callback. Once the watchdog times out it will call this
 function where we print the thread id and then reset the board. This would be useful if there is the
 need to perform any meaningful operation before resetting the board.
 
-The led task just switched ON and OFF the led associated to the led0 node then feeds the wdt.
+If the button is pressed the registered callback will be called and this will trigger the flip of a 
+boolean flag. If this flag is true at the moment when the inifite loop evaluates its value, it will
+cause the task to sleep forever triggering the WDT.
+If the flag is false it will just switch ON and OFF the led to show the task is alive then feeds the wdt.
