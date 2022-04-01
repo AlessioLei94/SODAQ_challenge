@@ -1,10 +1,10 @@
 .. _SODAQ-challenge:
 
 SODAQ Challenge
-######
+###############
 
 Design choices
-********
+**************
 
 My solution for the challege consists in a simple firmware that is split between few source files.
 I separated the files having some of them containing the implementation of drivers while the others
@@ -22,13 +22,20 @@ For building the firmware i used nRF Connect SDK v1.9.1 with the nRF Connect ext
 Visual Sudio Code.
 
 Implementation
-********
+**************
+.. contents::
+   :local:
+   :depth: 2
 
 The source files containing the implementation of a task are:
-- main.c
-- task_contol.c
 
-main.c contains the main() function, entry point of the fw, that first gets the reset
+* main.c
+* task_contol.c
+
+main.c
+======
+
+Contains the main() function, entry point of the fw, that first gets the reset
 cause from the hwinfo module then it prints its value after resetting the flags in orded to always have
 only the cause of the last reset.
 
@@ -40,7 +47,10 @@ After the WDT initialization a new channel is added to it, this channel will be 
 the main task. Once inside the infinite loop this task will just print a message and feed the
 wdt every second.
 
-control_task.c contains the Implementation of another task, that is defined at compile time using
+control_task.c
+==============
+
+Contains the Implementation of another task, that is defined at compile time using
 the K_THREAD_DEFINE macro. This will statically allocate the memory used as stack by the task.
 
 Once the task is started it will initialize the LED and the BTN calling the corresponding init functions,
