@@ -7,9 +7,12 @@
 #include <task_wdt/task_wdt.h>
 
 #include <leds.h>
+#include <btns.h>
 
 #define SLEEP_TIME_MS   	200U
 #define WDT_RESET_TIME_MS	500U
+
+static bool stop_task = false;
 
 /*
  * Task WDT callback function
@@ -34,6 +37,16 @@ void task_wdt_cb(int channel_id, void *user_data) {
 }
 
 /*
+ * BTN pressed callback used to flip a booleanflag that if true is going to block
+ * the control task forever triggering the WDT
+ */
+void button_pressed_cb(const struct device *port, struct gpio_callback *cb, uint32_t pins) {
+	printk("Button pressed cb");
+
+	stop_task = !stop_task;
+}
+
+/*
  * Control task function.
  * Initialize led, add a new channel to the task WDT then enter infinite loop
  * in which the LED status is switched between ON and OFF and the WDT is fed.
@@ -44,7 +57,18 @@ void control_task(void) {
 
 	printk("control_task started!");
 
+	//Init LED
 	if(led_init() < 0) {
+		return;
+	}
+
+	//Init BTN
+	if(btns_init() < 0) {
+		return;
+	}
+
+	//Register button pressed cb
+	if(register_btn_cb(button_pressed_cb) < 0) {
 		return;
 	}
 
@@ -55,7 +79,10 @@ void control_task(void) {
 	}
 
 	while(1) {
-		//TODO: Put some condition that if true blocks the task here (BTN pressed, time based, else)
+		if(stop_task) {
+			k_sleep(K_FOREVER);
+		}
+
 		ret = led_set_status(led_status);
 		if(ret != 0) {
 			printk("Failed to set LED to status %d, trying again", led_status);
