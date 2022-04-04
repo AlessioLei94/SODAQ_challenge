@@ -21,7 +21,7 @@ static bool stop_task = false;
  * - user_data: parameter used to pass the thread id in order to print it
  */
 void task_wdt_cb(int channel_id, void *user_data) {
-	printk("Task watchdog channel %d callback, thread: %s\n",
+	printk("Task watchdog channel %d callback, thread: %s didn't reset WDT in time\n",
 		channel_id, k_thread_name_get((k_tid_t)user_data));
 
 	/*
@@ -98,4 +98,4 @@ void control_task(void) {
 /*
  * Define task at compile time and starts it 1 sec after boot
  */
-K_THREAD_DEFINE(led_task, 1024, control_task, NULL, NULL, NULL, 0, 0, 1000U);
+K_THREAD_DEFINE(control_thread, 1024, control_task, NULL, NULL, NULL, 0, 0, 1000U);
