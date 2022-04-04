@@ -20,14 +20,14 @@ int register_btn_cb(gpio_callback_handler_t cb) {
     static bool registered = false;
 
     if(registered) {
-        printk("Button cn already registered!");
+        printk("Button cn already registered!\n");
         return -1;
     }
 
     gpio_init_callback(&button_cb_data, cb, BIT(button.pin));
     int ret = gpio_add_callback(button.port, &button_cb_data);
     if(ret != 0) {
-        printk("gpio_add_callback failed (%d)", ret);
+        printk("gpio_add_callback failed (%d)\n", ret);
         return ret;
     }
 

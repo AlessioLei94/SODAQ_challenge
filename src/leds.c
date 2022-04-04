@@ -36,13 +36,13 @@ int led_set_status(bool status) {
 int led_init(void) {
 	dev = device_get_binding(LED0);
 	if (dev == NULL) {
-		printk("device_get_binding() failed");
+		printk("device_get_binding() failed\n");
 		return -1;
 	}
 
 	int ret = gpio_pin_configure(dev, PIN, GPIO_OUTPUT_ACTIVE | FLAGS);
 	if (ret < 0) {
-		printk("gpio_pin_configure() failed (%d)", ret);
+		printk("gpio_pin_configure() failed (%d)\n", ret);
 		return ret;
 	}
 

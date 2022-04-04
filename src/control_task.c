@@ -41,7 +41,7 @@ void task_wdt_cb(int channel_id, void *user_data) {
  * the control task forever triggering the WDT
  */
 void button_pressed_cb(const struct device *port, struct gpio_callback *cb, uint32_t pins) {
-	printk("Button pressed cb");
+	printk("Button pressed cb\n");
 
 	stop_task = !stop_task;
 }
@@ -55,7 +55,7 @@ void control_task(void) {
 	bool led_status = true;
 	int ret = 0;
 
-	printk("control_task started!");
+	printk("control_task started!\n");
 
 	//Init LED
 	if(led_init() < 0) {
@@ -74,7 +74,7 @@ void control_task(void) {
 
 	int wdt_id = task_wdt_add(WDT_RESET_TIME_MS, task_wdt_cb, (void *)k_current_get());
 	if(wdt_id < 0) {
-		printk("task_wdt_add() failed (%d)", wdt_id);
+		printk("task_wdt_add() failed (%d)\n", wdt_id);
 		return;
 	}
 
@@ -85,7 +85,7 @@ void control_task(void) {
 
 		ret = led_set_status(led_status);
 		if(ret != 0) {
-			printk("Failed to set LED to status %d, trying again", led_status);
+			printk("Failed to set LED to status %d, trying again\n", led_status);
 		} else {
 			led_status = !led_status;
 		}
