@@ -10,6 +10,9 @@
 #include <drivers/hwinfo.h>
 #include <task_wdt/task_wdt.h>
 
+#include <leds.h>
+#include <btns.h>
+
 /*
  * If the devicetree has a watchdog node, we get the watchdog device
  * from there. Otherwise, the task watchdog will be used without a
@@ -54,6 +57,16 @@ void main(void)
 #else
 	const struct device *hw_wdt = NULL;
 #endif
+
+	//Init LED
+	if(led_init() < 0) {
+		return;
+	}
+
+	//Init BTN
+	if(btns_init() < 0) {
+		return;
+	}
 
  	if(!device_is_ready(hw_wdt)) {
 		printk("WDT %s not ready\n", hw_wdt->name);
