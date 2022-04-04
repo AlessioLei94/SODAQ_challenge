@@ -52,7 +52,8 @@ void button_pressed_cb(const struct device *port, struct gpio_callback *cb, uint
  * in which the LED status is switched between ON and OFF and the WDT is fed.
  */
 void control_task(void) {
-	bool led_status = true;
+	bool led_status[LEDS_NUMBER] = {true, true, true, true};
+	uint8_t counter = 0;
 	int ret = 0;
 
 	printk("control_task started!\n");
@@ -83,12 +84,14 @@ void control_task(void) {
 			k_sleep(K_FOREVER);
 		}
 
-		ret = led_set_status(led_status);
+		ret = led_set_status(counter, led_status[counter]);
 		if(ret != 0) {
-			printk("Failed to set LED to status %d, trying again\n", led_status);
+			printk("Failed to set LED to status %d, trying again\n", led_status[counter]);
 		} else {
-			led_status = !led_status;
+			led_status[counter] = !led_status[counter];
 		}
+
+		counter = (counter + 1) % LEDS_NUMBER;
 
 		task_wdt_feed(wdt_id);
 		k_sleep(K_MSEC(SLEEP_TIME_MS));
