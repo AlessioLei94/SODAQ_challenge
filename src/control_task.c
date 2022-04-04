@@ -58,16 +58,6 @@ void control_task_fun(void) {
 
 	printk("control_task started!\n");
 
-	//Init LED
-	if(led_init() < 0) {
-		return;
-	}
-
-	//Init BTN
-	if(btns_init() < 0) {
-		return;
-	}
-
 	//Register button pressed cb
 	if(register_btn1_cb(button0_pressed_cb) < 0) {
 		return;
