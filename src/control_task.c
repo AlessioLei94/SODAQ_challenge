@@ -10,7 +10,7 @@
 #include <btns.h>
 
 #define SLEEP_TIME_MS   	200U
-#define WDT_RESET_TIME_MS	500U
+#define WDT_RESET_TIME_MS	210U
 
 static bool stop_task = false;
 
@@ -40,8 +40,8 @@ void task_wdt_cb(int channel_id, void *user_data) {
  * BTN pressed callback used to flip a booleanflag that if true is going to block
  * the control task forever triggering the WDT
  */
-void button_pressed_cb(const struct device *port, struct gpio_callback *cb, uint32_t pins) {
-	printk("Button pressed cb\n");
+void button0_pressed_cb(const struct device *port, struct gpio_callback *cb, uint32_t pins) {
+	printk("Button0 pressed cb\n");
 
 	stop_task = !stop_task;
 }
@@ -51,7 +51,7 @@ void button_pressed_cb(const struct device *port, struct gpio_callback *cb, uint
  * Initialize led, add a new channel to the task WDT then enter infinite loop
  * in which the LED status is switched between ON and OFF and the WDT is fed.
  */
-void control_task(void) {
+void control_task_fun(void) {
 	bool led_status[LEDS_NUMBER] = {true, true, true, true};
 	uint8_t counter = 0;
 	int ret = 0;
@@ -69,10 +69,12 @@ void control_task(void) {
 	}
 
 	//Register button pressed cb
-	if(register_btn_cb(button_pressed_cb) < 0) {
+	if(register_btn1_cb(button0_pressed_cb) < 0) {
 		return;
 	}
 
+	//Add wdt channel for control task, giving a callback to call when wdt resets
+	//and passing the thread id to the callback as an argument
 	int wdt_id = task_wdt_add(WDT_RESET_TIME_MS, task_wdt_cb, (void *)k_current_get());
 	if(wdt_id < 0) {
 		printk("task_wdt_add() failed (%d)\n", wdt_id);
@@ -101,4 +103,4 @@ void control_task(void) {
 /*
  * Define task at compile time and starts it 1 sec after boot
  */
-K_THREAD_DEFINE(control_thread, 1024, control_task, NULL, NULL, NULL, 0, 0, 1000U);
+K_THREAD_DEFINE(control_task, 1024, control_task_fun, NULL, NULL, NULL, 0, 0, 1000U);
