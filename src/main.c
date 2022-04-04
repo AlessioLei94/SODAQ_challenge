@@ -38,9 +38,9 @@ void main(void)
 	 */
 	int ret = hwinfo_get_reset_cause(&reset_cause);
 	if(ret == -ENOTSUP) {
-		printk("hwinfo_get_reset_cause() not supported, value will be zero");
+		printk("hwinfo_get_reset_cause() not supported, value will be zero\n");
 	} else if(ret != 0) {
-		printk("hwinfo_get_reset_cause() failed (%d)", ret);
+		printk("hwinfo_get_reset_cause() failed (%d)\n", ret);
 		return;
 	}
 
@@ -56,20 +56,20 @@ void main(void)
 #endif
 
  	if(!device_is_ready(hw_wdt)) {
-		printk("WDT %s not ready", hw_wdt->name);
+		printk("WDT %s not ready\n", hw_wdt->name);
 		hw_wdt = NULL;
 	}
 
 	ret = task_wdt_init(hw_wdt);
 	if(ret != 0) {
-		printk("task_wdt_init() failed (%d)", ret);
+		printk("task_wdt_init() failed (%d)\n", ret);
 		return;
 	}
 
 	//Add wdt channel for main task, passing NULL instead of cb triggers reset
 	int wdt_id = task_wdt_add(1100U, NULL, NULL);
 	if(wdt_id < 0) {
-		printk("task_wdt_add() failed (%d)", wdt_id);
+		printk("task_wdt_add() failed (%d)\n", wdt_id);
 		return;
 	}
 
@@ -78,7 +78,7 @@ void main(void)
 	 * and feeds the task wdt once every second
 	 */
 	while(1) {
-		printk("Main task is alive :)");
+		printk("Main task is alive :)\n");
 		task_wdt_feed(wdt_id);
 		k_sleep(K_MSEC(1000));
 	}
