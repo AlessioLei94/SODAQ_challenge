@@ -28,6 +28,12 @@ void button1_pressed_cb(const struct device *port, struct gpio_callback *cb, uin
     }
 }
 
+/*
+ * Counter task function.
+ * Register BTN2 pressed callback that increases a counter.
+ * Infinite loop that prints the value of the counter.
+ * Access to the counter is controlled by a mutex
+ */
 void counter_task_fun(void) {
     int ret = register_btn2_cb(button1_pressed_cb);
     if(ret != 0) {
